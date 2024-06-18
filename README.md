@@ -8,7 +8,7 @@ Learning cellular dynamics through reconstruction of the underlying cellular pot
 
 
 # Datasets
-We benchmark the performance of PI-SDE on two time-series scRNA-seq datasets, including pancreatic β-cell differentiation (Veres et al., 2019, https://doi.org/10.1038/s41586-019-1168-5) and mouse hematopoiesis (Weinreb et al., 2020, https://www.science.org/doi/10.1126/science.aaw3381). For pancreatic β-cell differentiation data, we downloaded the data from GEO (GSE114412). For mouse hematopoiesis data, we obtained the original data from  
+We benchmark the performance of PI-SDE on two time-series scRNA-seq datasets, including pancreatic β-cell differentiation (Veres et al., 2019, https://doi.org/10.1038/s41586-019-1168-5) and mouse hematopoiesis (Weinreb et al., 2020, https://www.science.org/doi/10.1126/science.aaw3381). For pancreatic β-cell differentiation data, we downloaded the data from GEO (GSE114412). For mouse hematopoiesis data, we obtained the original data from   
 
 
 

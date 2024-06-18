@@ -1,7 +1,7 @@
 import torch
-from methods import baseFunc
-from methods import misc
-from methods.types import Sequence, TensorOrTensors
+from src.methods import baseFunc
+from src.methods import misc
+from src.methods.types import Sequence, TensorOrTensors
 
 
 class AdjointSDE(baseFunc.BaseSDE):

@@ -2,88 +2,16 @@
 # which implements the main pre-training and training loop
 
 import torch
-import torch.nn.functional as F
 from collections import OrderedDict
-from torch import nn, optim
+from torch import nn
 import math
-import sde
+import src.sde as sde
 import numpy as np
 
-from geomloss import SamplesLoss
-
-import tqdm
-from time import strftime, localtime
-import os
 
 
-# ---- convenience functions
-
-def p_samp(p, num_samp, w=None):
-    repflag = p.shape[0] < num_samp
-    p_sub = np.random.choice(p.shape[0], size=num_samp, replace=repflag)
-
-    if w is None:
-        w_ = torch.ones(len(p_sub))
-    else:
-        w_ = w[p_sub].clone()
-    w_ = w_ / w_.sum()
-
-    return p[p_sub, :].clone(), w_
 
 
-def fit_regularizer(samples, pp, burnin, dt, sd, model, device):
-    factor = samples.shape[0] / pp.shape[0]
-
-    z = torch.randn(burnin, pp.shape[0], pp.shape[1]) * sd
-    z = z.to(device)
-
-    for i in range(burnin):
-        pp = model._step(pp, dt, z=z[i, :, :])
-
-    pos_fv = -1 * model._pot(samples).sum()
-    neg_fv = factor * model._pot(pp.detach()).sum()
-
-    return pp, pos_fv, neg_fv
-
-
-def get_weight(w, time_elapsed):
-    return w
-
-
-def init(args):
-    args.cuda = not args.no_cuda and torch.cuda.is_available()
-    device = torch.device('cuda:{}'.format(args.device) if args.cuda else 'cpu')
-    kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-
-    return device, kwargs
-
-
-def weighted_samp(p, num_samp, w):
-    ix = list(torch.utils.data.WeightedRandomSampler(w, num_samp))
-    return p[ix, :].clone()
-
-
-# ---- model
-
-class IntReLU(nn.Module):
-
-    def __init__(self, input_dim):
-        super(IntReLU, self).__init__()
-
-    def forward(self, x):
-        return torch.max(torch.zeros_like(x), 0.5 * (x ** 2))  # + self.c)
-
-class PositionalEncoding(nn.Module):
-    def __init__(self, device, d_model):
-        super(PositionalEncoding, self).__init__()
-        self.dropout = nn.Dropout(p=0.1)
-        self.pe = torch.zeros(1, d_model).to(device)
-        self.div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(20.0) / d_model)).to(device)
-
-    def forward(self, t):
-        self.pe[0, 0::2] = torch.sin(t * self.div_term)
-        self.pe[0, 1::2] = torch.cos(t * self.div_term)
-        return self.pe
 
 class LipSwish(torch.nn.Module):
     def forward(self, x):
@@ -96,10 +24,6 @@ class MLP(torch.nn.Module):
         model = [torch.nn.Linear(input_dim, hidden_dim), LipSwish()]
         for _ in range(num_layers - 1):
             model.append(torch.nn.Linear(hidden_dim, hidden_dim))
-            ###################
-            # LipSwish activations are useful to constrain the Lipschitz constant of the discriminator.
-            # (For simplicity we additionally use them in the generator, but that's less important.)
-            ###################
             model.append(LipSwish())
         model.append(torch.nn.Linear(hidden_dim, out_dim))
         if tanh:
@@ -127,8 +51,6 @@ class AutoGenerator(nn.Module):
             self.act = nn.Softplus
         elif self.activation == 'tanh':
             self.act = nn.Tanh
-        elif self.activation == 'intrelu':  # broken, wip
-            raise NotImplementedError
         elif self.activation == 'none':
             self.act = None
         else:
@@ -136,15 +58,11 @@ class AutoGenerator(nn.Module):
         
         self.net_ = []
         for i in range(self.layers): 
-            # add linear layer
             if i == 0: 
                 self.net_.append(('linear{}'.format(i+1), nn.Linear(self.dim+1, self.k_dims[i]))) 
             else: 
                 self.net_.append(('linear{}'.format(i+1), nn.Linear(self.k_dims[i-1], self.k_dims[i]))) 
-            # add activation
-            if self.activation == 'intrelu':
-                raise NotImplementedError
-            elif self.activation == 'none': 
+            if self.activation == 'none': 
                 pass
             else:
                 self.net_.append(('{}{}'.format(self.activation, i+1), self.act()))
@@ -153,7 +71,7 @@ class AutoGenerator(nn.Module):
         self.net = nn.Sequential(self.net_)
 
         net_params = list(self.net.parameters())
-        net_params[-1].data = torch.zeros(net_params[-1].data.shape) # initialize
+        net_params[-1].data = torch.zeros(net_params[-1].data.shape) 
 
         self.noise_type = 'diagonal'
         self.sde_type = "ito"
@@ -161,7 +79,7 @@ class AutoGenerator(nn.Module):
         cfg = dict(
             input_dim=self.dim + 1,
             out_dim=self.dim,
-            hidden_dim=16,
+            hidden_dim=128,
             num_layers=2,
             tanh=True
         )
@@ -172,8 +90,6 @@ class AutoGenerator(nn.Module):
             self.sigma = self.sigma.repeat(self.dim).unsqueeze(0)
         elif self.sigma_type == "const_param":
             self.sigma = nn.Parameter(torch.randn(1,self.dim), requires_grad=True)
- 
-        # self.sigma = MLP(**cfg)
 
     def _pot(self, xt):
         xt = xt.requires_grad_()
@@ -187,11 +103,11 @@ class AutoGenerator(nn.Module):
         pot = self._pot(xt)                    # batch * 1
         drift = torch.autograd.grad(pot, xt, torch.ones_like(pot),create_graph=True)[0]
 
-        drift_x = drift[:,0:-1]                # batch * N
+        drift_x = -drift[:,0:-1]               # batch * N
         drift_t = drift[:,-1].unsqueeze(1)     # batch *1
 
         delta_hjb = torch.abs(drift_t - 0.5 * torch.sum(torch.pow(drift_x, 2),1,keepdims=True))
-        new_drift = torch.cat([-drift_x, delta_hjb], dim=1)  # batch * (N+1)
+        new_drift = torch.cat([drift_x, delta_hjb], dim=1)  # batch * (N+1)
         return new_drift
     
     def _drift(self, xt):
@@ -215,13 +131,6 @@ class AutoGenerator(nn.Module):
         g = torch.cat([g, extra_g], dim=1)
         return g
 
-        # x = x_r[:,0:-1] 
-        # t = (((torch.ones(x.shape[0]).to(x.device)) * t).unsqueeze(1))
-        # tx = torch.cat([t, x], dim=1)
-        # g = self.sigma(tx).view(-1, self.dim)
-        # extra_g = (((torch.zeros(x.shape[0]).to(x.device))).unsqueeze(1))
-        # g = torch.cat([g, extra_g], dim=1)
-        # return g
 
 
 
@@ -233,7 +142,7 @@ class ForwardSDE(torch.nn.Module):
         self._func = AutoGenerator(config)
 
     def forward(self, ts, x_r_0):
-        x_r_s = sde.sdeint_adjoint(self._func, x_r_0, ts, method='euler', dt=0.1, dt_min=0.01,
+        x_r_s = sde.sdeint_adjoint(self._func, x_r_0, ts, method=self.solver, dt=0.1, dt_min=0.0001,
                                      adjoint_method='euler', names={'drift': 'f', 'diffusion': 'g'} )
         return x_r_s
 

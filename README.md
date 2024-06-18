@@ -9,7 +9,9 @@ Learning cellular dynamics through reconstruction of the underlying cellular pot
 
 
 # Datasets
-We benchmark the performance of PI-SDE on two time-series scRNA-seq datasets, including pancreatic β-cell differentiation (Veres et al., 2019, https://doi.org/10.1038/s41586-019-1168-5) and mouse hematopoiesis (Weinreb et al., 2020, https://www.science.org/doi/10.1126/science.aaw3381). For pancreatic β-cell differentiation data (Veres data), we downloaded the data from GEO ([GSE114412](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114412)). For mouse hematopoiesis data (MH data), we obtained the original data from https://github.com/AllonKleinLab/paper-data/blob/master/Lineage_tracing_on_transcriptional_landscapes_links_state_to_fate_during_differentiation/README.md.
+We benchmark the performance of PI-SDE on two time-series scRNA-seq datasets, including pancreatic β-cell differentiation (Veres et al., 2019, https://doi.org/10.1038/s41586-019-1168-5) and mouse hematopoiesis (Weinreb et al., 2020, https://www.science.org/doi/10.1126/science.aaw3381). 
+For pancreatic β-cell differentiation data (Veres data), we downloaded the data from GEO ([GSE114412](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114412)). 
+For mouse hematopoiesis data (MH data), we obtained the original data from https://github.com/AllonKleinLab/paper-data/blob/master/Lineage_tracing_on_transcriptional_landscapes_links_state_to_fate_during_differentiation/README.md.
 
 Detailed pre-processing steps for the data can be found in the catalogues ./data/Veres and ./data/Weinreb
 

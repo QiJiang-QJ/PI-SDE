@@ -1,4 +1,4 @@
-from config_Veres import load_data
+from src.config_Veres import load_data
 from src.model import ForwardSDE
 import torch
 import numpy as np
@@ -37,6 +37,8 @@ def evaluate_fit(args, initial_config, use_loss='emd'):
     device = init_device(args)
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
+
+    args.out_dir = 'RESULTS/' + args.data
 
     config = initial_config(args)
     x, y, config = load_data(config)
@@ -158,7 +160,7 @@ def evaluate_fit_leaveout(args,initial_config,leaveouts=None,use_loss='emd'):
 
 
         
-def _evaluate_impute_model(config, t_cur, model, x,w, y,device, use_loss='emd'):
+def _evaluate_impute_model(config, t_cur, model, x, y,device, use_loss='emd'):
 
     torch.manual_seed(0)
     np.random.seed(0)
@@ -186,8 +188,7 @@ def _evaluate_impute_model(config, t_cur, model, x,w, y,device, use_loss='emd'):
     elif use_loss == 'emd':
         loss_xy = earth_mover_distance(x_r_s[:,0:-1].cpu().numpy(), y_t)
     
-    return loss_xy        
-
+    return loss_xy 
 
 
 

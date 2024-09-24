@@ -137,7 +137,7 @@ class ForwardSDE(torch.nn.Module):
         self._func = AutoGenerator(config)
 
     def forward(self, ts, x_r_0):
-        x_r_s = sde.sdeint_adjoint(self._func, x_r_0, ts, method=self.solver, dt=0.1, dt_min=0.0001,
+        x_r_s = sde.sdeint_adjoint(self._func, x_r_0, ts, method='euler', dt=0.1, dt_min=0.0001,
                                      adjoint_method='euler', names={'drift': 'f', 'diffusion': 'g'} )
         return x_r_s
 

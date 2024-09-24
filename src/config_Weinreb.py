@@ -23,7 +23,6 @@ def config():
     parser.add_argument('--train_batch', default=0.1, type=float)
     parser.add_argument('--train_clip', default=0.1, type=float)
     parser.add_argument('--save', default=500, type=int)
-    parser.add_argument('--solver', default='euler')
     # -- test options
     parser.add_argument('--evaluate_n', default=10000, type=int)
     parser.add_argument('--evaluate_data')

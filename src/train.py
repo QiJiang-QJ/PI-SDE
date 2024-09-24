@@ -66,8 +66,8 @@ def run(args,initial_config):
     config = initial_config(args)
     x, y, config = load_data(config)
 
-    if os.path.exists(os.path.join(config.out_dir, 'train.log')):
-        print(os.path.join(config.out_dir, 'train.log'), ' exists. Skipping.')
+    if os.path.exists(os.path.join(config.out_dir, 'train.epoch_003000.pt')):
+        print(os.path.join(config.out_dir, 'train.epoch_003000.pt'), ' exists. Skipping.')
         
     else:
         model = ForwardSDE(config)
@@ -184,8 +184,8 @@ def run_leaveout(args,initial_config,leaveouts=None):
     config = initial_config(args)
     x, y, config = load_data(config)
 
-    if os.path.exists(os.path.join(config.out_dir, 'train.log')):
-        print(os.path.join(config.out_dir, 'train.log'), ' exists. Skipping.')
+    if os.path.exists(os.path.join(config.out_dir, 'train.epoch_003000.pt')):
+        print(os.path.join(config.out_dir, 'train.epoch_003000.pt'), ' exists. Skipping.')
 
     else:
         model = ForwardSDE(config)

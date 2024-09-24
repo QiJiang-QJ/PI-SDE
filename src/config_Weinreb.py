@@ -9,6 +9,7 @@ def config():
     parser.add_argument('--device', default=1, type=int)
     parser.add_argument('--out_dir', default='RESULTS/Weinreb')
     # -- data options
+    parser.add_argument('--data', default='Weinreb')
     parser.add_argument('--data_path', default='data/Weinreb/alltime/fate_train.pt')
     parser.add_argument('--data_dir', default='data/Weinreb')
     # -- model options

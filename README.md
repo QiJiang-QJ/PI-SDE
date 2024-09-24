@@ -22,6 +22,15 @@ PI-SDE takes the input of time-series scRNA-seq data and outputs:
 - the reconstructed potential energy landscape that resembles the original Waddington landscape,
 - inferred cellular velocity.
 
+## Requirements and Setup
+
+```bash
+conda create -n pi-sde python=3.7.16
+conda activate pi-sde 
+pip install -r requirements.txt
+```
+
+
 ## Fate task on Veres data (train on all time points)
 
 ```bash

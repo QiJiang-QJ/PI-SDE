@@ -15,6 +15,8 @@ For mouse hematopoiesis data (MH data), we obtained the original data from https
 
 Detailed pre-processing steps for these data can be found in the catalogues ./data/Veres and ./data/Weinreb
 
+You can download the preprocessed data here
+
 
 # Getting Started
 PI-SDE takes the input of time-series scRNA-seq data and outputs:

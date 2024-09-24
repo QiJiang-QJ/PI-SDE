@@ -4,7 +4,7 @@ import torch
 
 def config():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--seed', type=int, default=1)
+    parser.add_argument('-s', '--seed', type=int, default=0)
     parser.add_argument('--use_cuda', action='store_true', default=True)
     parser.add_argument('--device', default=1, type=int)
     parser.add_argument('--out_dir', default='RESULTS/Weinreb')

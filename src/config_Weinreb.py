@@ -1,8 +1,6 @@
 import argparse
-import copy
 import os
 import torch
-import numpy as np
 
 def config():
     parser = argparse.ArgumentParser()
@@ -25,6 +23,7 @@ def config():
     parser.add_argument('--train_batch', default=0.1, type=float)
     parser.add_argument('--train_clip', default=0.1, type=float)
     parser.add_argument('--save', default=500, type=int)
+    parser.add_argument('--solver', default='euler')
     # -- test options
     parser.add_argument('--evaluate_n', default=10000, type=int)
     parser.add_argument('--evaluate_data')
@@ -56,16 +55,16 @@ def init_config(args):
 
     name = (
         "{activation}-{kDims}-"
-        "{train_tau}-{sigma_type}-{sigma_const}-"
+        "{train_lambda}-{sigma_type}-{sigma_const}-"
         "{train_clip}-{train_lr}"
     ).format(**args.__dict__)
+
+    args.out_dir = os.path.join(args.out_dir, name, 'seed_{}'.format(args.seed))
 
     if args.task == 'leaveout':
         args.out_dir = os.path.join(args.out_dir,args.leaveout_t)
     else:
         args.out_dir = os.path.join(args.out_dir,'alltime')
-
-    args.out_dir = os.path.join(args.out_dir, name, 'seed_{}'.format(args.seed))
 
     if not os.path.exists(args.out_dir):
         print('Making directory at {}'.format(args.out_dir))

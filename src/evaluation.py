@@ -44,7 +44,7 @@ def evaluate_fit(args, initial_config, use_loss='emd'):
     x, y, config = load_data(config)
     config = SimpleNamespace(**torch.load(config.config_pt))
 
-    file_info = 'interpolate' + use_loss + '.log'
+    file_info = 'interpolate-' + use_loss + '.log'
     log_path = os.path.join(config.out_dir, file_info)
     
     if os.path.exists(log_path):

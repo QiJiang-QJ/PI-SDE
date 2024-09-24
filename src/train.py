@@ -5,11 +5,7 @@ from geomloss import SamplesLoss
 import tqdm
 from src.model import ForwardSDE
 import os
-from config_Veres import load_data
-
-
-
-
+from src.config_Veres import load_data
 
 
 def p_samp(p, num_samp, w=None):
@@ -141,7 +137,7 @@ def run(args,initial_config):
                 # report
                 desc = "[train] {}".format(epoch + 1)
                 desc += " {:.6f}".format(train_loss_xy)
-                if config.train_tau > 0:
+                if config.train_lambda > 0:
                     desc += " {:.6f}".format(train_loss_r)
                 desc += " {:.6f}".format(best_train_loss_xy)
                 pbar.set_description(desc)
@@ -256,7 +252,7 @@ def run_leaveout(args,initial_config,leaveouts=None):
 
                 desc = "[train] {}".format(epoch + 1)
                 desc += " {:.6f}".format(train_loss_xy)
-                if config.train_tau > 0:
+                if config.train_lambda > 0:
                     desc += " {:.6f}".format(train_loss_r)
                 desc += " {:.6f}".format(best_train_loss_xy)
                 pbar.set_description(desc)
